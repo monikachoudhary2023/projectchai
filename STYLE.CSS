@@ -18,7 +18,7 @@ body {
     position: relative;
     width: 210px;
     height: 115px;
-
+    
     border-bottom-left-radius: 45%;
     border-bottom-right-radius: 45%;
     background: linear-gradient(to right, #8e8d8d, #212020);
@@ -58,7 +58,7 @@ body {
     bottom: 0;
     /* width: calc(100% - 0%);
     height: 50px; */
-    width: 177px;
+    width: 180px;
     height: 54px;
     background: linear-gradient(to top, #7d4b3e, #c89666);
     animation: boil 7s infinite ease-in-out;
@@ -75,6 +75,7 @@ body {
     height: 20px;
     background: #000;
     border-radius: 50px;
+    z-index: -1;
    
 }
   
@@ -332,8 +333,8 @@ body {
 
 .vapor {
     position: absolute;
-    width: 15px;
-    height: 20px;
+    width: 8px;
+    height: 12px;
     background: linear-gradient(to top, rgba(255, 255, 255, 0.3), transparent);
     border-radius: 50%;
     opacity: 1;

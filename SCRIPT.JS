@@ -1,86 +1,77 @@
-
-// const regulators = document.querySelectorAll('.regulator');
-
-//         regulators.forEach((regulator) => {
-//             regulator.addEventListener('click', () => {
-//                 const burnerIndex = regulator.dataset.burner - 1;
-//                 const flame = document.querySelectorAll('.flame')[burnerIndex];
-
-                
-//                 let currentRotation = regulator.style.transform || 'rotate(0deg)';
-
-              
-//                 if (currentRotation === 'rotate(0deg)') {
-//                     currentRotation = 'rotate(45deg)'; 
-//                     flame.style.display = 'block';
-//                     flame.style.height = '40px'; 
-//                     flame.style.width = '40px'; 
-//                 } else if (currentRotation === 'rotate(45deg)') {
-//                     currentRotation = 'rotate(90deg)'; 
-//                     flame.style.display = 'block';
-//                     flame.style.height = '55px'; 
-//                     flame.style.width = '55px'; 
-//                 } 
-//                 else if (currentRotation === 'rotate(90deg)') {
-//                     currentRotation = 'rotate(135deg)'; 
-//                     flame.style.display = 'block';
-//                     flame.style.height = '70px';
-//                     flame.style.width = '70px';  }
-//                     else {
-//                     currentRotation = 'rotate(0deg)'; 
-//                     flame.style.display = 'none'; 
-//                 }
-
-//                 regulator.style.transform = currentRotation;
-//             });
-//         });
-
-
 const regulators = document.querySelectorAll('.regulator');
 
-        regulators.forEach((regulator) => {
-            regulator.addEventListener('click', () => {
-                const burnerIndex = regulator.dataset.burner - 1;
-                const flame = document.querySelectorAll('.flame')[burnerIndex];
-                const tea = document.querySelector('.tea');
-                
-                let currentRotation = regulator.style.transform || 'rotate(0deg)';
+regulators.forEach((regulator) => {
+    let isDragging = false;
+    let startAngle = 0;
+    let currentAngle = 0;
 
-                if (currentRotation === 'rotate(0deg)') {
-                    currentRotation = 'rotate(45deg)'; 
-                    flame.style.display = 'block';
-                    flame.style.height = '65px'; 
-                    flame.style.width = '48px';
-                    tea.style.animationPlayState = 'paused'; 
-                    // tea.style.opacity = 1; 
-                    startBoiling();
-                } else if (currentRotation === 'rotate(45deg)') {
-                    currentRotation = 'rotate(90deg)'; 
-                    flame.style.display = 'block';
-                    flame.style.height = '70px'; 
-                    flame.style.width = '60px'; 
-                    tea.style.animationPlayState = 'paused'; 
-                    // tea.style.opacity = 1; 
-                } 
-                else if (currentRotation === 'rotate(90deg)') {
-                    currentRotation = 'rotate(135deg)'; 
-                    flame.style.display = 'block';
-                    flame.style.height = '77px'; 
-                    flame.style.width = '77px'; 
-                    tea.style.animationPlayState = 'running'; 
-                    tea.style.opacity = 1; 
-                    
-                } 
-                else {
-                    currentRotation = 'rotate(0deg)'; 
-                    flame.style.display = 'none';
-                    tea.style.animationPlayState = 'paused'; 
-                    tea.style.opacity = 0; 
-                    stopBoiling(); 
-                }
+    const burnerIndex = regulator.dataset.burner - 1;
+    const flame = document.querySelectorAll('.flame')[burnerIndex];
+    const tea = document.querySelector('.tea');
 
-                regulator.style.transform = currentRotation;
-                
+    function updateFlame(angle) {
+        if (angle >= 0 && angle < 45) {
+            flame.style.display = 'none';
+            tea.style.animationPlayState = 'paused';
+            tea.style.opacity = 0;
+            stopBoiling();
+        } else if (angle >= 45 && angle < 90) {
+            flame.style.display = 'block';
+            flame.style.height = '65px';
+            flame.style.width = '48px';
+            tea.style.animationPlayState = 'paused';
+            startBoiling();
+        } else if (angle >= 90 && angle < 180) {
+            flame.style.display = 'block';
+            flame.style.height = '70px';
+            flame.style.width = '60px';
+            tea.style.animationPlayState = 'paused';
+        } else if (angle >= 180) {
+            flame.style.display = 'block';
+            flame.style.height = '77px';
+            flame.style.width = '77px';
+            tea.style.animationPlayState = 'running';
+            tea.style.opacity = 1;
+        }
+    }
+
+    regulator.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        const rect = regulator.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dx = e.clientX - centerX;
+        const dy = e.clientY - centerY;
+        startAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const rect = regulator.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dx = e.clientX - centerX;
+            const dy = e.clientY - centerY;
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            currentAngle = (angle - startAngle + 360) % 360;
+            currentAngle = Math.min(Math.max(currentAngle, 0), 135);
+            regulator.style.transform = `rotate(${currentAngle}deg)`;
+            updateFlame(currentAngle);
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            if (currentAngle >= 135) {
+                setTimeout(() => {
+                    regulator.style.transform = 'rotate(0deg)';
+                    updateFlame(0);
+                }, 1000);
+            }
+        }
+    });
+});
 
 function startBoiling() {
     addBubbles();
@@ -98,7 +89,7 @@ function addBubbles() {
         bubble.classList.add('bubbles');
         bubble.style.left = `${Math.random() * 100}%`;
         bubble.style.bottom = `${Math.random() * 10}px`;
-        tea.appendChild(bubble);
+        document.querySelector('.tea').appendChild(bubble);
     }
 }
 
@@ -110,5 +101,3 @@ function addVapor() {
         document.querySelector('.circle').appendChild(vapor);
     }
 }
-            });
-        });
